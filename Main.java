@@ -3,6 +3,7 @@ import java.util.*;
 
 
 public class Main {
+	//Переменная деревьев. Тут хранятся все деревья, для всех файлов
 	public static HashMap<String, HuffmanNode> trees = new HashMap<String, HuffmanNode>();
 
 	public static void main(String[] args) {
@@ -53,19 +54,26 @@ public class Main {
 	}
 
 	public static void comp(String sourceFile, String resultFile) {
+		//Делим весь тест на слова по пробелам
 		ArrayList<String> words = fileSplitByWords(sourceFile);
+		//Считаем все слова, сохраняем в хэш, ключ слово, значение количество слова в тексте
 		HashMap<String, Integer> wordCount = findEachWordCount(words);
+		//Создаем массив из листьев дерева
 		ArrayList<HuffmanNode> nodesArray = buildNodeArray(wordCount);
+		//Строим дерево, сохраняем корневой элемент
 		HuffmanNode root = buildTree(nodesArray);
 
 		String s = "";
 		HashMap<String, String> codesMap = new HashMap<String, String>();
+		//Создаем хэш ключ слово, значение код по дереву
 		createCodesMap(root, s, codesMap);
+		//Проходимся по массиву слов, добавляем в строку вместо слова его код
 		String newFileBits = "";
 		for(int i = 0; i < words.size(); i++){
 			newFileBits += codesMap.get(words.get(i));
 		}
 
+		//Записываем в файл
 		File newFile = new File(resultFile);
 		try (DataOutputStream dos = new DataOutputStream(new FileOutputStream(newFile))) {
 			byte[] bitBytes = bitsToBytes(newFileBits);
@@ -74,34 +82,49 @@ public class Main {
 			throw new RuntimeException(e);
 		}
 
+		//Добавляем дерево в хэш деревьев. Сохраняем только корневой элемент.
+		//Остальные элементы дерева будут сохранены, так как они связаны между собой.
+		//Если скомпрессировать еще один файл, в переменной "nodesArray" будут новые узлы,
+		//но старые остануться в памяти тоже.
 		trees.put(resultFile, root);
 		System.out.println("File compressed");
 	}
 
 	public static void decomp(String sourceFile, String resultFile) {
+		//Получаем корневой элемент дерева.
 		HuffmanNode root = trees.get(sourceFile);
 
 		try (DataInputStream dis = new DataInputStream(new FileInputStream(sourceFile));
 			 BufferedWriter writer = new BufferedWriter(new FileWriter(resultFile))) {
+			//Читаем закодированный файл по байтам
 			byte[] compressedData = dis.readAllBytes();
+			//Получаем из байтов строку битов
 			String bitString = bytesToBits(compressedData);
 
+			//Текущий элемент, это корень дерева
 			HuffmanNode current = root;
+			//Сюда будем добавлять раскодированные элементы файла
 			StringBuilder result = new StringBuilder();
 
 			for (char bit : bitString.toCharArray()) {
+				//Если в строке 0, идем на лево, если 1, идем на право
 				current = (bit == '0') ? current.left : current.right;
 
+				//Если у узла нет левого узла и правого узла, значит мы нашли наше слово
 				if (current.left == null && current.right == null) {
+					//Проверяем, не является ли значение узла пробелом, так как все пробелы были
+					//заменены на специальную строку в методе "fileSplitByWords"
 					String valueToWrite = current.value.equals("SpAcEiNtExT") ? " " : current.value;
 					result.append(valueToWrite);
+					//Возвращаем в текущий элемент корень дерева
 					current = root;
 				}
 			}
 
+			//Небольшой костыль, удаляем лишние пробелы в конце строки, так как почему-то после декомпрессии
+			//появлялись лишние пробелы
 			String decompressedText = result.toString().replaceAll("\\s+$", "");
 			writer.write(decompressedText);
-
 
 			System.out.println("File decompressed");
 		} catch (IOException e) {
@@ -161,6 +184,9 @@ public class Main {
 
 	//Methods for compressor
 	private static byte[] bitsToBytes(String bitString) {
+		//Украл этот метод у Захара
+		//Без понятия что здесь происходит
+		//Делаем из битов байты кароче
 		int len = bitString.length();
 		int byteCount = (len+7)/8;
 		byte[] result = new byte[byteCount];
@@ -180,33 +206,47 @@ public class Main {
 		return result;
 	}
 
-	public static void createCodesMap(HuffmanNode node, String code, HashMap<String, String> codesMap) {
+	//Создаем хэш кодов через рекурсию
+	private static void createCodesMap(HuffmanNode node, String code, HashMap<String, String> codesMap) {
+		//Если node == null, мы дошли до конца
 		if (node != null) {
+			//Если нет левого и правого узла, значит мы нашли код для нашего слова
 			if (node.left == null && node.right == null) {
 				codesMap.put(node.value, code);
 			}
 
+			//Если есть правый или левый элемент у узла, идем дальше
 			createCodesMap(node.left, code + "0", codesMap);
 			createCodesMap(node.right, code + "1", codesMap);
 		}
 	}
 
-	public static HuffmanNode buildTree(ArrayList<HuffmanNode> nodesArray){
+	//Строим дерево по алгоритму хоффмана, связываем узлы
+	private static HuffmanNode buildTree(ArrayList<HuffmanNode> nodesArray){
+		//Приоритетный список, который всегда себя сортирует
 		PriorityQueue<HuffmanNode> pq = new PriorityQueue<>(Comparator.comparingInt(HuffmanNode::getCount));
+		//Добавляем туда наши узлы дерева
 		pq.addAll(nodesArray);
 
+		//Если узлов больше одного
 		while (pq.size() > 1) {
+			//вытаскиваем два последних элемента, poll() удаялет их из изначального списка
 			HuffmanNode left = pq.poll();
 			HuffmanNode right = pq.poll();
 
+			//Суммируем их количество
 			int count = left.count + right.count;
-			HuffmanNode newNode = new HuffmanNode("±", count, left, right);
+			//Создаем новый служебный узел
+			HuffmanNode newNode = new HuffmanNode(null, count, left, right);
+			//Добавляем обратно в список новый узел
 			pq.offer(newNode);
 		}
+		//Последний элемент который остался - корневой элемент
 		return pq.poll();
 	}
 
-	public static ArrayList<HuffmanNode> buildNodeArray(HashMap<String, Integer> valueAndCount){
+	//Создаем массив узлов
+	private static ArrayList<HuffmanNode> buildNodeArray(HashMap<String, Integer> valueAndCount){
 		ArrayList<HuffmanNode> nodesArray = new ArrayList<HuffmanNode>();
 
 		for(Map.Entry<String, Integer> entry : valueAndCount.entrySet()){
@@ -216,6 +256,7 @@ public class Main {
 		return nodesArray;
 	}
 
+	//Делим весь текст по пробелам
 	private static ArrayList<String> fileSplitByWords(String filename){
 		BufferedReader br;
         ArrayList<String> words = new ArrayList<>();
@@ -223,13 +264,20 @@ public class Main {
             br = new BufferedReader(new FileReader(filename));
             String s;
             while ((s = br.readLine()) != null) {
+				//Заменяем все пробелы на специальную строку
+				//Если делить текст просто по " ", будут проблемы в местах, где идут множественные пробелы,
+				//они просто исчезнут
 				s = s.replaceAll(" ", "_sPlIt_SpAcEiNtExT_sPlIt_");
+				//Делим текст по _sPlIt_, в итоге вместо пробелов у нас остается SpAcEiNtExT, который на этапе
+				//декомпрессии будем менять на пробелы
 				String[] wordArray = s.split("_sPlIt_");
                 for (String word : wordArray) {
 					words.add(word);
                 }
+				//Добавляем символ новой строки, когда прошлись по всей строке
 				words.add("\n");
             }
+			//Удаляем последний символ новой строки в конце файла, т.к. он лишний
 			words.removeLast();
             br.close();
         } catch (FileNotFoundException e) {
@@ -240,7 +288,8 @@ public class Main {
         return words;
 	}
 
-	static HashMap<String, Integer> findEachWordCount(ArrayList<String> words){
+	//Ищем количество всех слов
+	private static HashMap<String, Integer> findEachWordCount(ArrayList<String> words){
 		HashMap<String, Integer> count = new HashMap<String, Integer>();
 		for(String ch: words){
 			if (count.containsKey(ch)){
@@ -252,7 +301,8 @@ public class Main {
 		return count;
 	}
 
-	//Methods for deocmpressor
+	//Получаем биты из байтов, не сам писал этот метод
+	//Хз как это работает
 	private static String bytesToBits(byte[] bytes) {
 		StringBuilder bitString = new StringBuilder();
 		for (byte b : bytes) {
@@ -264,6 +314,7 @@ public class Main {
 	}
 }
 
+//Класс нашего узла в дереве
 class HuffmanNode{
 	HuffmanNode left;
 	HuffmanNode right;
