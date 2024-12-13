@@ -3,6 +3,8 @@ import java.util.*;
 
 
 public class Main {
+	public static HashMap<String, HuffmanNode> trees = new HashMap<String, HuffmanNode>();
+
 	public static void main(String[] args) {
 		Scanner sc = new Scanner(System.in);
 		String choiseStr;
@@ -33,7 +35,7 @@ public class Main {
 				size(sourceFile);
 				break;
 			case "equal":
-				System.out.print("first file name: ");
+				System.out.print("first.txt file name: ");
 				firstFile = sc.next();
 				System.out.print("second file name: ");
 				secondFile = sc.next();
@@ -72,29 +74,29 @@ public class Main {
 			throw new RuntimeException(e);
 		}
 
-		saveTreeToFile(root, "treeFile");
+		trees.put(resultFile, root);
 		System.out.println("File compressed");
 	}
 
 	public static void decomp(String sourceFile, String resultFile) {
-		HuffmanNode root = restoreTreeFromFile("treeFile");
+		HuffmanNode root = trees.get(sourceFile);
 
 		try (DataInputStream dis = new DataInputStream(new FileInputStream(sourceFile));
 			 BufferedWriter writer = new BufferedWriter(new FileWriter(resultFile))) {
-			 byte[] compressedData = dis.readAllBytes();
-			 String bitString = bytesToBits(compressedData);
+			byte[] compressedData = dis.readAllBytes();
+			String bitString = bytesToBits(compressedData);
 
-			 HuffmanNode current = root;
-			 StringBuilder result = new StringBuilder();
+			HuffmanNode current = root;
+			StringBuilder result = new StringBuilder();
 
-			 for (char bit : bitString.toCharArray()) {
-				 current = (bit == '0') ? current.left : current.right;
+			for (char bit : bitString.toCharArray()) {
+				current = (bit == '0') ? current.left : current.right;
 
-				 if (current.left == null && current.right == null) {
-					 String valueToWrite = current.value.equals("SpAcEiNtExT") ? " " : current.value;
-					 result.append(valueToWrite);
-					 current = root;
-				 }
+				if (current.left == null && current.right == null) {
+					String valueToWrite = current.value.equals("SpAcEiNtExT") ? " " : current.value;
+					result.append(valueToWrite);
+					current = root;
+				}
 			}
 
 			String decompressedText = result.toString().replaceAll("\\s+$", "");
@@ -106,17 +108,6 @@ public class Main {
 			throw new RuntimeException("Error during decompression: " + e.getMessage());
 		}
 	}
-
-	private static String bytesToBits(byte[] bytes) {
-		StringBuilder bitString = new StringBuilder();
-		for (byte b : bytes) {
-			for (int i = 7; i >= 0; i--) {
-				bitString.append((b >> i) & 1);
-			}
-		}
-		return bitString.toString();
-	}
-
 
 	public static void size(String sourceFile) {
 		try {
@@ -168,6 +159,7 @@ public class Main {
 		System.out.println("");
 	}
 
+	//Methods for compressor
 	private static byte[] bitsToBytes(String bitString) {
 		int len = bitString.length();
 		int byteCount = (len+7)/8;
@@ -259,51 +251,17 @@ public class Main {
 		}
 		return count;
 	}
-//-----------------------------------
-	public static void saveTreeToFile(HuffmanNode root, String treeFile) {
-		try (DataOutputStream dos = new DataOutputStream(new FileOutputStream(treeFile))) {
-			saveNode(dos, root);
-		} catch (IOException e) {
-			throw new RuntimeException("Error while saving the tree: " + e.getMessage());
+
+	//Methods for deocmpressor
+	private static String bytesToBits(byte[] bytes) {
+		StringBuilder bitString = new StringBuilder();
+		for (byte b : bytes) {
+			for (int i = 7; i >= 0; i--) {
+				bitString.append((b >> i) & 1);
+			}
 		}
+		return bitString.toString();
 	}
-
-	private static void saveNode(DataOutputStream dos, HuffmanNode node) throws IOException {
-		if (node == null) return;
-
-		if (node.left == null && node.right == null) {
-			dos.writeChar('L');
-			dos.writeUTF(node.value);
-		} else {
-			dos.writeChar('I');
-		}
-
-		saveNode(dos, node.left);
-		saveNode(dos, node.right);
-	}
-
-	public static HuffmanNode restoreTreeFromFile(String treeFile) {
-		try (DataInputStream dis = new DataInputStream(new FileInputStream(treeFile))) {
-			return restoreNode(dis);
-		} catch (IOException e) {
-			throw new RuntimeException("Error while restoring the tree: " + e.getMessage());
-		}
-	}
-
-	private static HuffmanNode restoreNode(DataInputStream dis) throws IOException {
-		char nodeType = dis.readChar();
-		if (nodeType == 'L') {
-			String value = dis.readUTF();
-			return new HuffmanNode(value, 0, null, null);
-		} else if (nodeType == 'I') {
-			HuffmanNode left = restoreNode(dis);
-			HuffmanNode right = restoreNode(dis);
-			return new HuffmanNode(null, 0, left, right);
-		}
-		return null;
-	}
-
-
 }
 
 class HuffmanNode{
