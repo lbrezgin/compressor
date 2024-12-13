@@ -185,20 +185,24 @@ public class Main {
 	//Methods for compressor
 	private static byte[] bitsToBytes(String bitString) {
 		//Украл этот метод у Захара
-		//Без понятия что здесь происходит
-		//Делаем из битов байты кароче
+		//Смотрим сколько у нас битов
 		int len = bitString.length();
+		//Добавляем 7 и делим на 8, в случае если у нас не ровное количество бит
 		int byteCount = (len+7)/8;
 		byte[] result = new byte[byteCount];
 		int index=0;
 		int val=0;
 		for (int i=0; i<len; i++) {
+			//Сдвигаемся на один влево, проверяем что у нас там
 			val = (val << 1) | (bitString.charAt(i)=='1'?1:0);
+			//если индекс 7, значит мы проверили весь байт
 			if ((i & 7) == 7) {
+				//записываем байт в массив байтов
 				result[index++] = (byte) val;
 				val=0;
 			}
 		}
+		//обработка последнего бита, если количество бит не кратно 8
 		if ((len & 7) != 0) {
 			val = val << (8-(len&7));
 			result[index] = (byte) val;
@@ -305,8 +309,11 @@ public class Main {
 	//Хз как это работает
 	private static String bytesToBits(byte[] bytes) {
 		StringBuilder bitString = new StringBuilder();
+		//Проходимся по каждому байту
 		for (byte b : bytes) {
+			//Проходимся по каждому биту в байте
 			for (int i = 7; i >= 0; i--) {
+				//побитовое & возвращает 1 если 1 & 1 и 0, если 0 & 1
 				bitString.append((b >> i) & 1);
 			}
 		}
