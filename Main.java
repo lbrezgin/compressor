@@ -1,3 +1,10 @@
+//241RDB292 Zaharijs Bēms
+//241RDB258 Daniils Mironovs
+//241RDB212 Darja Latišonoka
+//241RDB004 Vladlens Medvedevs
+//241RDB202 Bogdans Kologrivovs
+//241RDB262 Ļevs Brezgins
+
 import java.io.*;
 import java.util.*;
 
@@ -156,7 +163,12 @@ public class Main {
 	}
 	
 	public static void about() {
-		System.out.println("");
+		System.out.println("241RDB292 Zaharijs Bēms");
+		System.out.println("241RDB258 Daniils Mironovs");
+		System.out.println("241RDB212 Darja Latišonoka");
+		System.out.println("241RDB004 Vladlens Medvedevs");
+		System.out.println("241RDB202 Bogdans Kologrivovs");
+		System.out.println("241RDB262 Ļevs Brezgins");
 	}
 
 	//Methods for compressor
@@ -252,7 +264,7 @@ public class Main {
 		return count;
 	}
 
-	//Methods for deocmpressor
+	//Methods for decompressor
 	private static String bytesToBits(byte[] bytes) {
 		StringBuilder bitString = new StringBuilder();
 		for (byte b : bytes) {
