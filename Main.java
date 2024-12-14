@@ -4,6 +4,7 @@ import java.util.*;
 
 public class Main {
 	public static HashMap<String, HuffmanNode> trees = new HashMap<String, HuffmanNode>();
+	public static HashMap<String, Integer> codesLength = new HashMap<String, Integer>();
 
 	public static void main(String[] args) {
 		Scanner sc = new Scanner(System.in);
@@ -53,17 +54,17 @@ public class Main {
 	}
 
 	public static void comp(String sourceFile, String resultFile) {
-		ArrayList<String> words = fileSplitByWords(sourceFile);
-		HashMap<String, Integer> wordCount = findEachWordCount(words);
-		ArrayList<HuffmanNode> nodesArray = buildNodeArray(wordCount);
+		ArrayList<String> characters = fileSplitByCharacters(sourceFile);
+		HashMap<String, Integer> charCount = findEachCharCount(characters);
+		ArrayList<HuffmanNode> nodesArray = buildNodeArray(charCount);
 		HuffmanNode root = buildTree(nodesArray);
 
 		String s = "";
 		HashMap<String, String> codesMap = new HashMap<String, String>();
 		createCodesMap(root, s, codesMap);
 		String newFileBits = "";
-		for(int i = 0; i < words.size(); i++){
-			newFileBits += codesMap.get(words.get(i));
+		for (int i = 0; i < characters.size(); i++) {
+			newFileBits += codesMap.get(characters.get(i));
 		}
 
 		File newFile = new File(resultFile);
@@ -75,6 +76,7 @@ public class Main {
 		}
 
 		trees.put(resultFile, root);
+		codesLength.put(resultFile, newFileBits.length());
 		System.out.println("File compressed");
 	}
 
@@ -84,7 +86,7 @@ public class Main {
 		try (DataInputStream dis = new DataInputStream(new FileInputStream(sourceFile));
 			 BufferedWriter writer = new BufferedWriter(new FileWriter(resultFile))) {
 			byte[] compressedData = dis.readAllBytes();
-			String bitString = bytesToBits(compressedData);
+			String bitString = bytesToBits(compressedData, codesLength.get(sourceFile));
 
 			HuffmanNode current = root;
 			StringBuilder result = new StringBuilder();
@@ -93,15 +95,14 @@ public class Main {
 				current = (bit == '0') ? current.left : current.right;
 
 				if (current.left == null && current.right == null) {
-					String valueToWrite = current.value.equals("SpAcEiNtExT") ? " " : current.value;
-					result.append(valueToWrite);
+					result.append(current.value);
 					current = root;
 				}
 			}
 
-			String decompressedText = result.toString().replaceAll("\\s+$", "");
-			writer.write(decompressedText);
-
+			writer.write(result.toString());
+			trees.remove(sourceFile);
+			codesLength.remove(sourceFile);
 
 			System.out.println("File decompressed");
 		} catch (IOException e) {
@@ -154,7 +155,7 @@ public class Main {
 			return false;
 		}
 	}
-	
+
 	public static void about() {
 		System.out.println("");
 	}
@@ -216,33 +217,31 @@ public class Main {
 		return nodesArray;
 	}
 
-	private static ArrayList<String> fileSplitByWords(String filename){
+	private static ArrayList<String> fileSplitByCharacters(String filename) {
 		BufferedReader br;
-        ArrayList<String> words = new ArrayList<>();
-        try {
-            br = new BufferedReader(new FileReader(filename));
-            String s;
-            while ((s = br.readLine()) != null) {
-				s = s.replaceAll(" ", "_sPlIt_SpAcEiNtExT_sPlIt_");
-				String[] wordArray = s.split("_sPlIt_");
-                for (String word : wordArray) {
-					words.add(word);
-                }
-				words.add("\n");
-            }
-			words.removeLast();
-            br.close();
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        return words;
+		ArrayList<String> characters = new ArrayList<>();
+		try {
+			br = new BufferedReader(new FileReader(filename));
+			String s;
+			while ((s = br.readLine()) != null) {
+				for (int i = 0; i < s.length(); i++) {
+					characters.add(String.valueOf(s.charAt(i)));
+				}
+				characters.add("\n");
+			}
+			characters.removeLast();
+			br.close();
+		} catch (FileNotFoundException e) {
+			throw new RuntimeException(e);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+		return characters;
 	}
 
-	static HashMap<String, Integer> findEachWordCount(ArrayList<String> words){
+	static HashMap<String, Integer> findEachCharCount(ArrayList<String> chars){
 		HashMap<String, Integer> count = new HashMap<String, Integer>();
-		for(String ch: words){
+		for(String ch: chars){
 			if (count.containsKey(ch)){
 				count.put(ch, count.get(ch)+1);
 			} else {
@@ -252,15 +251,15 @@ public class Main {
 		return count;
 	}
 
-	//Methods for deocmpressor
-	private static String bytesToBits(byte[] bytes) {
+	//Methods for decompressor
+	private static String bytesToBits(byte[] bytes, int codeLength) {
 		StringBuilder bitString = new StringBuilder();
 		for (byte b : bytes) {
 			for (int i = 7; i >= 0; i--) {
 				bitString.append((b >> i) & 1);
 			}
 		}
-		return bitString.toString();
+		return bitString.toString().substring(0, codeLength+1);
 	}
 }
 
