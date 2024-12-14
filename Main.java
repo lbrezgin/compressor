@@ -1,9 +1,9 @@
-//241RDB292 Zaharijs Bēms
-//241RDB258 Daniils Mironovs
-//241RDB212 Darja Latišonoka
-//241RDB004 Vladlens Medvedevs
-//241RDB202 Bogdans Kologrivovs
-//241RDB262 Ļevs Brezgins
+//241RDB292 Zaharijs Bēms 12
+//241RDB258 Daniils Mironovs 12
+//241RDB212 Darja Latišonoka 12
+//241RDB004 Vladlens Medvedevs 12
+//241RDB202 Bogdans Kologrivovs 12
+//241RDB262 Ļevs Brezgins 12
 
 import java.io.*;
 import java.util.*;
@@ -163,12 +163,12 @@ public class Main {
 	}
 	
 	public static void about() {
-		System.out.println("241RDB292 Zaharijs Bēms");
-		System.out.println("241RDB258 Daniils Mironovs");
-		System.out.println("241RDB212 Darja Latišonoka");
-		System.out.println("241RDB004 Vladlens Medvedevs");
-		System.out.println("241RDB202 Bogdans Kologrivovs");
-		System.out.println("241RDB262 Ļevs Brezgins");
+		System.out.println("241RDB292 Zaharijs Bēms 12");
+		System.out.println("241RDB258 Daniils Mironovs 12");
+		System.out.println("241RDB212 Darja Latišonoka 12");
+		System.out.println("241RDB004 Vladlens Medvedevs 12");
+		System.out.println("241RDB202 Bogdans Kologrivovs 12");
+		System.out.println("241RDB262 Ļevs Brezgins 12");
 	}
 
 	//Methods for compressor
