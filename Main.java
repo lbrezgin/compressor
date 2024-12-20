@@ -16,43 +16,43 @@ public class Main {
 		Scanner sc = new Scanner(System.in);
 		String choiseStr;
 		String sourceFile, resultFile, firstFile, secondFile;
-		
+
 		loop: while (true) {
-			
+
 			choiseStr = sc.next();
-								
+
 			switch (choiseStr) {
-			case "comp":
-				System.out.print("source file name: ");
-				sourceFile = sc.next();
-				System.out.print("archive name: ");
-				resultFile = sc.next();
-				comp(sourceFile, resultFile);
-				break;
-			case "decomp":
-				System.out.print("archive name: ");
-				sourceFile = sc.next();
-				System.out.print("file name: ");
-				resultFile = sc.next();
-				decomp(sourceFile, resultFile);
-				break;
-			case "size":
-				System.out.print("file name: ");
-				sourceFile = sc.next();
-				size(sourceFile);
-				break;
-			case "equal":
-				System.out.print("first.txt file name: ");
-				firstFile = sc.next();
-				System.out.print("second file name: ");
-				secondFile = sc.next();
-				System.out.println(equal(firstFile, secondFile));
-				break;
-			case "about":
-				about();
-				break;
-			case "exit":
-				break loop;
+				case "comp":
+					System.out.print("source file name: ");
+					sourceFile = sc.next();
+					System.out.print("archive name: ");
+					resultFile = sc.next();
+					comp(sourceFile, resultFile);
+					break;
+				case "decomp":
+					System.out.print("archive name: ");
+					sourceFile = sc.next();
+					System.out.print("file name: ");
+					resultFile = sc.next();
+					decomp(sourceFile, resultFile);
+					break;
+				case "size":
+					System.out.print("file name: ");
+					sourceFile = sc.next();
+					size(sourceFile);
+					break;
+				case "equal":
+					System.out.print("first file name: ");
+					firstFile = sc.next();
+					System.out.print("second file name: ");
+					secondFile = sc.next();
+					System.out.println(equal(firstFile, secondFile));
+					break;
+				case "about":
+					about();
+					break;
+				case "exit":
+					break loop;
 			}
 		}
 
@@ -82,7 +82,6 @@ public class Main {
 		}
 
 		trees.put(resultFile, root);
-		System.out.println("File compressed");
 	}
 
 	public static void decomp(String sourceFile, String resultFile) {
@@ -109,8 +108,6 @@ public class Main {
 			String decompressedText = result.toString().replaceAll("\\s+$", "");
 			writer.write(decompressedText);
 
-
-			System.out.println("File decompressed");
 		} catch (IOException e) {
 			throw new RuntimeException("Error during decompression: " + e.getMessage());
 		}
@@ -125,9 +122,9 @@ public class Main {
 		catch (IOException ex) {
 			System.out.println(ex.getMessage());
 		}
-		
+
 	}
-	
+
 	public static boolean equal(String firstFile, String secondFile) {
 		try {
 			FileInputStream f1 = new FileInputStream(firstFile);
@@ -149,7 +146,7 @@ public class Main {
 						f2.close();
 						return false;
 					}
-						
+
 				}
 			} while (!(k1 == -1 && k2 == -1));
 			f1.close();
@@ -161,7 +158,7 @@ public class Main {
 			return false;
 		}
 	}
-	
+
 	public static void about() {
 		System.out.println("241RDB292 Zaharijs Bēms 12");
 		System.out.println("241RDB258 Daniils Mironovs 12");
@@ -230,26 +227,26 @@ public class Main {
 
 	private static ArrayList<String> fileSplitByWords(String filename){
 		BufferedReader br;
-        ArrayList<String> words = new ArrayList<>();
-        try {
-            br = new BufferedReader(new FileReader(filename));
-            String s;
-            while ((s = br.readLine()) != null) {
+		ArrayList<String> words = new ArrayList<>();
+		try {
+			br = new BufferedReader(new FileReader(filename));
+			String s;
+			while ((s = br.readLine()) != null) {
 				s = s.replaceAll(" ", "_sPlIt_SpAcEiNtExT_sPlIt_");
 				String[] wordArray = s.split("_sPlIt_");
-                for (String word : wordArray) {
+				for (String word : wordArray) {
 					words.add(word);
-                }
+				}
 				words.add("\n");
-            }
+			}
 			words.removeLast();
-            br.close();
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        return words;
+			br.close();
+		} catch (FileNotFoundException e) {
+			throw new RuntimeException(e);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+		return words;
 	}
 
 	static HashMap<String, Integer> findEachWordCount(ArrayList<String> words){
